@@ -1,14 +1,19 @@
-import { WARDS, heatColor, riskIndex } from "@/lib/heat-data";
+import { heatColor, riskIndex, type Ward } from "@/lib/heat-data";
 
 export function NeighborhoodTable({
+  wards,
   selectedId,
   onSelect,
+  filter = "",
 }: {
+  wards: Ward[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  filter?: string;
 }) {
-  const ranked = [...WARDS]
+  const ranked = [...wards]
     .map((w) => ({ ...w, risk: riskIndex(w) }))
+    .filter((w) => w.name.toLowerCase().includes(filter.toLowerCase()))
     .sort((a, b) => b.risk - a.risk);
 
   return (
@@ -21,7 +26,7 @@ export function NeighborhoodTable({
           <div className="text-sm font-semibold">Neighborhood Heat Risk Index</div>
         </div>
         <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          {WARDS.length} zones · ranked
+          {ranked.length} of {wards.length} zones
         </div>
       </div>
 
@@ -80,6 +85,13 @@ export function NeighborhoodTable({
                 </tr>
               );
             })}
+            {ranked.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-xs text-muted-foreground">
+                  No zones match your filter.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
