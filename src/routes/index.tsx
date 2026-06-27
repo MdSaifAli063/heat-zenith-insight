@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Activity, Satellite, Thermometer, Sparkles, MapPin } from "lucide-react";
-import { CITIES } from "@/lib/heat-data";
+import { ArrowRight, Activity, Satellite, Thermometer, Sparkles, MapPin, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CITIES, STATES } from "@/lib/heat-data";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
