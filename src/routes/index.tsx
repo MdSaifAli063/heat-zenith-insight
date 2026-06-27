@@ -122,74 +122,11 @@ function Landing() {
         </div>
       </section>
 
-      <section className="relative mx-auto max-w-7xl px-6 pb-32">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-accent">
-              Pick your city
-            </div>
-            <h3 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-              Six Indian metros. One thermal lens.
-            </h3>
-          </div>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Each card is wired to a live mission control with that city's
-            ward-level LST stack, drivers and cooling scenarios.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {CITIES.map((c) => {
-            const tone =
-              c.meanLST >= 47 ? "var(--heat-extreme)" :
-              c.meanLST >= 45 ? "var(--heat-hot)" :
-              c.meanLST >= 43 ? "var(--heat-warm)" : "var(--heat-mild)";
-            return (
-              <Link
-                key={c.id}
-                to="/dashboard"
-                search={{ city: c.id as never }}
-                className="glass-panel group relative overflow-hidden rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-[0_0_40px_-12px_var(--primary)]"
-              >
-                <div
-                  className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-40 blur-3xl transition-opacity group-hover:opacity-70"
-                  style={{ background: tone }}
-                />
-                <div className="relative">
-                  <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      <MapPin className="h-3 w-3 text-primary" />
-                      {c.lat} · {c.lon}
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
-                  </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-3">
-                    <div>
-                      <div className="text-xl font-semibold">{c.name}</div>
-                      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {c.state} · {c.climate}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono text-2xl font-semibold tabular-nums" style={{ color: tone }}>
-                        {c.meanLST.toFixed(1)}°
-                      </div>
-                      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                        Mean LST
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
-                    <span>{c.wards.length} wards</span>
-                    <span>{(c.populationTotal / 1e6).toFixed(1)}M residents</span>
-                    <span>{c.satellite.split(" · ")[0]}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      <section id="cities" className="relative mx-auto max-w-7xl px-6 pb-32">
+        <StatePicker />
       </section>
+
+
 
 
       <footer className="border-t border-border/60 py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
