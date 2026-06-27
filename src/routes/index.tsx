@@ -61,8 +61,9 @@ function Landing() {
                 to="/dashboard"
                 className="group inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_40px_-8px_var(--primary)]"
               >
-                Launch Bengaluru dashboard
+                Launch mission control
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+
               </Link>
               <a
                 href="#capabilities"
