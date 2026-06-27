@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Activity, Satellite, Thermometer, Sparkles, MapPin } from "lucide-react";
-import { CITIES } from "@/lib/heat-data";
+import { ArrowRight, Activity, Satellite, Thermometer, Sparkles, MapPin, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CITIES, STATES } from "@/lib/heat-data";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -59,8 +61,9 @@ function Landing() {
                 to="/dashboard"
                 className="group inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_40px_-8px_var(--primary)]"
               >
-                Launch Bengaluru dashboard
+                Launch mission control
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+
               </Link>
               <a
                 href="#capabilities"
@@ -119,74 +122,11 @@ function Landing() {
         </div>
       </section>
 
-      <section className="relative mx-auto max-w-7xl px-6 pb-32">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-accent">
-              Pick your city
-            </div>
-            <h3 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-              Six Indian metros. One thermal lens.
-            </h3>
-          </div>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Each card is wired to a live mission control with that city's
-            ward-level LST stack, drivers and cooling scenarios.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {CITIES.map((c) => {
-            const tone =
-              c.meanLST >= 47 ? "var(--heat-extreme)" :
-              c.meanLST >= 45 ? "var(--heat-hot)" :
-              c.meanLST >= 43 ? "var(--heat-warm)" : "var(--heat-mild)";
-            return (
-              <Link
-                key={c.id}
-                to="/dashboard"
-                search={{ city: c.id as never }}
-                className="glass-panel group relative overflow-hidden rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-[0_0_40px_-12px_var(--primary)]"
-              >
-                <div
-                  className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-40 blur-3xl transition-opacity group-hover:opacity-70"
-                  style={{ background: tone }}
-                />
-                <div className="relative">
-                  <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      <MapPin className="h-3 w-3 text-primary" />
-                      {c.lat} · {c.lon}
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary" />
-                  </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-3">
-                    <div>
-                      <div className="text-xl font-semibold">{c.name}</div>
-                      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {c.state} · {c.climate}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono text-2xl font-semibold tabular-nums" style={{ color: tone }}>
-                        {c.meanLST.toFixed(1)}°
-                      </div>
-                      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                        Mean LST
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
-                    <span>{c.wards.length} wards</span>
-                    <span>{(c.populationTotal / 1e6).toFixed(1)}M residents</span>
-                    <span>{c.satellite.split(" · ")[0]}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      <section id="cities" className="relative mx-auto max-w-7xl px-6 pb-32">
+        <StatePicker />
       </section>
+
+
 
 
       <footer className="border-t border-border/60 py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -255,7 +195,155 @@ function Capability({
   );
 }
 
+/* ------------------------------ State picker ------------------------------ */
+
+const REGIONS: Record<string, string[]> = {
+  North: ["Delhi","Punjab","Haryana","Himachal Pradesh","Jammu and Kashmir","Ladakh","Uttarakhand","Uttar Pradesh","Rajasthan","Chandigarh"],
+  South: ["Karnataka","Kerala","Tamil Nadu","Telangana","Andhra Pradesh","Puducherry","Lakshadweep","Andaman & Nicobar Islands"],
+  East:  ["West Bengal","Bihar","Jharkhand","Odisha","Sikkim"],
+  West:  ["Maharashtra","Gujarat","Goa","Dadra & Nagar Haveli and Daman & Diu"],
+  Central: ["Madhya Pradesh","Chhattisgarh"],
+  Northeast: ["Assam","Arunachal Pradesh","Manipur","Meghalaya","Mizoram","Nagaland","Tripura"],
+};
+
+function StatePicker() {
+  const [region, setRegion] = useState<keyof typeof REGIONS | "All">("All");
+  const [q, setQ] = useState("");
+
+  const visible = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return STATES
+      .filter((g) => region === "All" || REGIONS[region].includes(g.state))
+      .map((g) => ({
+        ...g,
+        cities: g.cities.filter(
+          (c) => !needle || c.name.toLowerCase().includes(needle) || g.state.toLowerCase().includes(needle),
+        ),
+      }))
+      .filter((g) => g.cities.length > 0);
+  }, [region, q]);
+
+  const totalCities = visible.reduce((s, g) => s + g.cities.length, 0);
+
+  return (
+    <div>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-accent">
+            Pick your region
+          </div>
+          <h3 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
+            All 28 states &amp; 8 UTs. One thermal lens.
+          </h3>
+          <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+            {STATES.length} states/UTs · {CITIES.length} cities monitored · {CITIES.reduce((s, c) => s + c.wards.length, 0)} ward polygons under live LST surveillance.
+          </p>
+        </div>
+        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search state or city…"
+              className="w-full rounded-md border border-border bg-card/60 py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(["All", ...Object.keys(REGIONS)] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRegion(r as keyof typeof REGIONS | "All")}
+                className={`rounded-md px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                  region === r
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {visible.map((g) => (
+          <div key={g.state}>
+            <div className="mb-3 flex items-baseline gap-3">
+              <div className="text-sm font-semibold tracking-tight">{g.state}</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                {g.cities.length} {g.cities.length === 1 ? "city" : "cities"}
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {g.cities.map((c) => {
+                const tone =
+                  c.meanLST >= 47 ? "var(--heat-extreme)" :
+                  c.meanLST >= 45 ? "var(--heat-hot)" :
+                  c.meanLST >= 43 ? "var(--heat-warm)" :
+                  c.meanLST >= 38 ? "var(--heat-mild)" : "var(--heat-cool)";
+                return (
+                  <Link
+                    key={c.id}
+                    to="/dashboard"
+                    search={{ city: c.id }}
+                    className="glass-panel group relative overflow-hidden rounded-lg p-4 transition-all hover:border-primary/40 hover:shadow-[0_0_30px_-12px_var(--primary)]"
+                  >
+                    <div
+                      className="pointer-events-none absolute -top-12 -right-12 h-28 w-28 rounded-full opacity-30 blur-2xl transition-opacity group-hover:opacity-60"
+                      style={{ background: tone }}
+                    />
+                    <div className="relative">
+                      <div className="flex items-center justify-between">
+                        <div className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                          <MapPin className="h-3 w-3 text-primary" />
+                          {c.lat}
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+                      </div>
+                      <div className="mt-2 flex items-baseline justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="truncate text-base font-semibold">{c.name}</div>
+                          <div className="truncate font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                            {c.climate}
+                          </div>
+                        </div>
+                        <div
+                          className="font-mono text-lg font-semibold tabular-nums"
+                          style={{ color: tone }}
+                        >
+                          {c.meanLST.toFixed(1)}°
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                        <span>{c.wards.length} wards</span>
+                        <span>{(c.populationTotal / 1e6).toFixed(2)}M</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {visible.length === 0 && (
+          <div className="rounded-lg border border-border/60 bg-card/40 py-12 text-center text-sm text-muted-foreground">
+            No cities match "{q}" in {region}.
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Showing {totalCities} of {CITIES.length} cities
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------- Animated 3D thermal globe ------------------------- */
+
+
 
 function ThermalGlobe() {
   // Generate static "hotspot" positions on the sphere surface (lat/long projection)

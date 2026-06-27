@@ -21,8 +21,9 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
 const dashboardSearchSchema = z.object({
-  city: fallback(z.enum(["bengaluru", "delhi", "ahmedabad", "mumbai", "chennai", "hyderabad"]), "bengaluru").default("bengaluru"),
+  city: fallback(z.string(), "bengaluru").default("bengaluru"),
 });
+
 
 export const Route = createFileRoute("/dashboard")({
   validateSearch: zodValidator(dashboardSearchSchema),

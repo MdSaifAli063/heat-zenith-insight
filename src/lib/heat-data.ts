@@ -108,7 +108,7 @@ const HYDERABAD_WARDS: Ward[] = [
   { id: "hyd-10", name: "Uppal",        lst: 48.8, ndvi: 0.16, albedo: 0.13, isf: 0.80, populationExposed: 172000, area:  9.6, x: 0.78, y: 0.46 },
 ];
 
-export const CITIES: City[] = [
+const SEED_CITIES: City[] = [
   {
     id: "bengaluru",
     name: "Bengaluru",
@@ -125,7 +125,7 @@ export const CITIES: City[] = [
   {
     id: "delhi",
     name: "Delhi",
-    state: "NCT",
+    state: "Delhi",
     lat: "28.61°N",
     lon: "77.20°E",
     meanLST: 46.8,
@@ -189,9 +189,143 @@ export const CITIES: City[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Generator for the remaining states / UTs — deterministic pseudo-random
+// values keep the dashboard meaningful without hand-curating 30+ datasets.
+// ---------------------------------------------------------------------------
+
+type CitySpec = {
+  id: string;
+  name: string;
+  state: string;
+  lat: string;
+  lon: string;
+  populationTotal: number;
+  climate: string;
+  satellite?: string;
+  capturedOn?: string;
+  baseLST: number; // mean LST baseline for the city
+  wardNames: string[];
+};
+
+// Simple seeded RNG so wards are stable across reloads.
+function rng(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0xffffffff;
+  };
+}
+
+function hash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h;
+}
+
+function buildCity(spec: CitySpec): City {
+  const rand = rng(hash(spec.id));
+  const wards: Ward[] = spec.wardNames.map((name, idx) => {
+    const lstJitter = (rand() - 0.4) * 6; // -2.4 .. +3.6
+    const lst = +(spec.baseLST + lstJitter).toFixed(1);
+    const ndvi = +(0.14 + rand() * 0.42).toFixed(2);
+    const albedo = +(0.11 + rand() * 0.14).toFixed(2);
+    const isf = +(0.42 + rand() * 0.46).toFixed(2);
+    const populationExposed = Math.round(60000 + rand() * 260000);
+    const area = +(3 + rand() * 14).toFixed(1);
+    return {
+      id: `${spec.id}-${idx + 1}`,
+      name,
+      lst,
+      ndvi,
+      albedo,
+      isf,
+      populationExposed,
+      area,
+      x: 0.18 + rand() * 0.7,
+      y: 0.12 + rand() * 0.78,
+    };
+  });
+  const meanLST = +(wards.reduce((s, w) => s + w.lst, 0) / wards.length).toFixed(1);
+  return {
+    id: spec.id,
+    name: spec.name,
+    state: spec.state,
+    lat: spec.lat,
+    lon: spec.lon,
+    meanLST,
+    populationTotal: spec.populationTotal,
+    satellite: spec.satellite ?? "Landsat 9 · Band 10",
+    capturedOn: spec.capturedOn ?? "2025-05-12",
+    climate: spec.climate,
+    wards,
+  };
+}
+
+const EXTRA_SPECS: CitySpec[] = [
+  // North
+  { id: "lucknow",     name: "Lucknow",     state: "Uttar Pradesh",     lat: "26.85°N", lon: "80.95°E", populationTotal: 3.5e6,  climate: "Humid subtropical", baseLST: 46.4, wardNames: ["Hazratganj","Gomti Nagar","Aliganj","Indira Nagar","Chinhat","Aminabad","Alambagh","Mahanagar"] },
+  { id: "jaipur",      name: "Jaipur",      state: "Rajasthan",         lat: "26.92°N", lon: "75.78°E", populationTotal: 3.9e6,  climate: "Hot semi-arid",     baseLST: 47.8, wardNames: ["Pink City","Malviya Nagar","Vaishali Nagar","C-Scheme","Mansarovar","Jagatpura","Sanganer","Amer"] },
+  { id: "chandigarh",  name: "Chandigarh",  state: "Chandigarh",        lat: "30.74°N", lon: "76.79°E", populationTotal: 1.05e6, climate: "Humid subtropical", baseLST: 45.2, wardNames: ["Sector 17","Sector 22","Sector 35","Manimajra","Industrial Area","Sector 43"] },
+  { id: "amritsar",    name: "Amritsar",    state: "Punjab",            lat: "31.63°N", lon: "74.87°E", populationTotal: 1.18e6, climate: "Humid subtropical", baseLST: 46.0, wardNames: ["Hall Bazar","Ranjit Avenue","Putlighar","Lawrence Road","Civil Lines","Majitha Road"] },
+  { id: "shimla",      name: "Shimla",      state: "Himachal Pradesh",  lat: "31.10°N", lon: "77.17°E", populationTotal: 1.7e5,  climate: "Subtropical highland", baseLST: 32.4, wardNames: ["The Mall","Lower Bazaar","Sanjauli","Chhota Shimla","New Shimla"] },
+  { id: "srinagar",    name: "Srinagar",    state: "Jammu and Kashmir", lat: "34.08°N", lon: "74.80°E", populationTotal: 1.18e6, climate: "Humid continental", baseLST: 34.6, wardNames: ["Lal Chowk","Dal Gate","Rajbagh","Hazratbal","Bemina","Nishat"] },
+  { id: "leh",         name: "Leh",         state: "Ladakh",            lat: "34.15°N", lon: "77.58°E", populationTotal: 4.5e4,  climate: "Cold desert",        baseLST: 28.8, wardNames: ["Main Bazaar","Changspa","Choglamsar","Skara"] },
+  { id: "dehradun",    name: "Dehradun",    state: "Uttarakhand",       lat: "30.32°N", lon: "78.03°E", populationTotal: 5.8e5,  climate: "Humid subtropical", baseLST: 42.6, wardNames: ["Clock Tower","Rajpur Road","Mussoorie Road","Sahastradhara","Dalanwala"] },
+  { id: "panchkula",   name: "Panchkula",   state: "Haryana",           lat: "30.69°N", lon: "76.85°E", populationTotal: 5.6e5,  climate: "Humid subtropical", baseLST: 45.4, wardNames: ["Sector 5","Sector 11","Pinjore","Mansa Devi","Industrial Area"] },
+  // East
+  { id: "kolkata",     name: "Kolkata",     state: "West Bengal",       lat: "22.57°N", lon: "88.36°E", populationTotal: 1.49e7, climate: "Tropical wet & dry", baseLST: 45.8, wardNames: ["Park Street","Salt Lake","Howrah","New Town","Ballygunge","Behala","Dum Dum","Garia"] },
+  { id: "patna",       name: "Patna",       state: "Bihar",             lat: "25.59°N", lon: "85.14°E", populationTotal: 2.5e6,  climate: "Humid subtropical", baseLST: 46.6, wardNames: ["Boring Road","Kankarbagh","Patliputra","Rajendra Nagar","Bailey Road","Danapur"] },
+  { id: "ranchi",      name: "Ranchi",      state: "Jharkhand",         lat: "23.34°N", lon: "85.31°E", populationTotal: 1.5e6,  climate: "Humid subtropical", baseLST: 43.8, wardNames: ["Main Road","Lalpur","Doranda","Hatia","Kanke Road","Morabadi"] },
+  { id: "bhubaneswar", name: "Bhubaneswar", state: "Odisha",            lat: "20.30°N", lon: "85.82°E", populationTotal: 9.4e5,  climate: "Tropical wet & dry", baseLST: 45.0, wardNames: ["Saheed Nagar","Patia","Chandrasekharpur","Old Town","Khandagiri","Nayapalli"] },
+  { id: "guwahati",    name: "Guwahati",    state: "Assam",             lat: "26.14°N", lon: "91.74°E", populationTotal: 1.1e6,  climate: "Humid subtropical", baseLST: 41.8, wardNames: ["Paltan Bazaar","Dispur","Jalukbari","Beltola","Six Mile","Maligaon"] },
+  { id: "imphal",      name: "Imphal",      state: "Manipur",           lat: "24.81°N", lon: "93.94°E", populationTotal: 4.0e5,  climate: "Humid subtropical", baseLST: 38.4, wardNames: ["Thangal Bazaar","Singjamei","Sagolband","Porompat"] },
+  { id: "agartala",    name: "Agartala",    state: "Tripura",           lat: "23.83°N", lon: "91.28°E", populationTotal: 4.5e5,  climate: "Tropical savanna", baseLST: 40.2, wardNames: ["Battala","Banamalipur","Krishnanagar","Bordowali","Indranagar"] },
+  { id: "shillong",    name: "Shillong",    state: "Meghalaya",         lat: "25.58°N", lon: "91.89°E", populationTotal: 3.5e5,  climate: "Subtropical highland", baseLST: 30.6, wardNames: ["Police Bazar","Laitumkhrah","Mawlai","Nongthymmai"] },
+  { id: "kohima",      name: "Kohima",      state: "Nagaland",          lat: "25.67°N", lon: "94.11°E", populationTotal: 1.2e5,  climate: "Subtropical highland", baseLST: 31.4, wardNames: ["High School","PR Hill","Lerie","Midland"] },
+  { id: "itanagar",    name: "Itanagar",    state: "Arunachal Pradesh", lat: "27.10°N", lon: "93.62°E", populationTotal: 6.0e4,  climate: "Humid subtropical", baseLST: 36.2, wardNames: ["Naharlagun","Ganga Market","Nirjuli","Borapani"] },
+  { id: "aizawl",      name: "Aizawl",      state: "Mizoram",           lat: "23.73°N", lon: "92.72°E", populationTotal: 3.0e5,  climate: "Subtropical highland", baseLST: 31.8, wardNames: ["Bara Bazar","Dawrpui","Chanmari","Zarkawt"] },
+  { id: "gangtok",     name: "Gangtok",     state: "Sikkim",            lat: "27.33°N", lon: "88.61°E", populationTotal: 1.0e5,  climate: "Subtropical highland", baseLST: 30.4, wardNames: ["MG Marg","Deorali","Tadong","Ranipool"] },
+  // West & Central
+  { id: "pune",        name: "Pune",        state: "Maharashtra",       lat: "18.52°N", lon: "73.86°E", populationTotal: 6.6e6,  climate: "Tropical wet & dry", baseLST: 44.2, wardNames: ["Shivaji Nagar","Koregaon Park","Hinjewadi","Kothrud","Hadapsar","Aundh","Kharadi"] },
+  { id: "nagpur",      name: "Nagpur",      state: "Maharashtra",       lat: "21.15°N", lon: "79.09°E", populationTotal: 2.9e6,  climate: "Tropical wet & dry", baseLST: 47.0, wardNames: ["Sitabuldi","Dharampeth","Civil Lines","Sadar","Manish Nagar","Wardha Road"] },
+  { id: "surat",       name: "Surat",       state: "Gujarat",           lat: "21.17°N", lon: "72.83°E", populationTotal: 4.8e6,  climate: "Tropical savanna", baseLST: 45.8, wardNames: ["Adajan","Vesu","Athwa","Varachha","Katargam","City Light"] },
+  { id: "panaji",      name: "Panaji",      state: "Goa",               lat: "15.50°N", lon: "73.83°E", populationTotal: 1.15e5, climate: "Tropical monsoon",  baseLST: 39.6, wardNames: ["Fontainhas","Campal","Miramar","St. Inez"] },
+  { id: "bhopal",      name: "Bhopal",      state: "Madhya Pradesh",    lat: "23.26°N", lon: "77.41°E", populationTotal: 1.9e6,  climate: "Humid subtropical", baseLST: 46.2, wardNames: ["MP Nagar","Arera Colony","Kolar","Bairagarh","TT Nagar","Hoshangabad Rd"] },
+  { id: "raipur",      name: "Raipur",      state: "Chhattisgarh",      lat: "21.25°N", lon: "81.63°E", populationTotal: 1.3e6,  climate: "Tropical wet & dry", baseLST: 45.4, wardNames: ["Pandri","Shankar Nagar","Telibandha","Devendra Nagar","Ravigram"] },
+  { id: "daman",       name: "Daman",       state: "Dadra & Nagar Haveli and Daman & Diu", lat: "20.39°N", lon: "72.83°E", populationTotal: 1.9e5, climate: "Tropical monsoon", baseLST: 40.2, wardNames: ["Nani Daman","Moti Daman","Devka","Jampore"] },
+  // South
+  { id: "thiruvananthapuram", name: "Thiruvananthapuram", state: "Kerala", lat: "8.52°N",  lon: "76.94°E", populationTotal: 1.7e6, climate: "Tropical monsoon", baseLST: 38.8, wardNames: ["Kowdiar","Pattom","Vellayambalam","Sreekaryam","Kazhakoottam","Statue"] },
+  { id: "kochi",        name: "Kochi",        state: "Kerala",          lat: "9.93°N",  lon: "76.27°E", populationTotal: 2.1e6,  climate: "Tropical monsoon", baseLST: 39.6, wardNames: ["MG Road","Kakkanad","Edappally","Fort Kochi","Kaloor","Vyttila"] },
+  { id: "mangaluru",    name: "Mangaluru",    state: "Karnataka",       lat: "12.91°N", lon: "74.86°E", populationTotal: 6.2e5,  climate: "Tropical monsoon", baseLST: 39.4, wardNames: ["Hampankatta","Lalbagh","Kankanady","Bejai","Kadri"] },
+  { id: "vijayawada",   name: "Vijayawada",   state: "Andhra Pradesh",  lat: "16.51°N", lon: "80.65°E", populationTotal: 1.5e6,  climate: "Tropical savanna", baseLST: 46.8, wardNames: ["MG Road","Benz Circle","Patamata","Gunadala","Auto Nagar","Labbipet"] },
+  { id: "port-blair",   name: "Port Blair",   state: "Andaman & Nicobar Islands", lat: "11.62°N", lon: "92.73°E", populationTotal: 1.4e5, climate: "Tropical monsoon", baseLST: 36.8, wardNames: ["Aberdeen Bazaar","Junglighat","Haddo","Phoenix Bay"] },
+  { id: "kavaratti",    name: "Kavaratti",    state: "Lakshadweep",     lat: "10.57°N", lon: "72.64°E", populationTotal: 1.2e4, climate: "Tropical monsoon", baseLST: 35.4, wardNames: ["Kavaratti Town","Beach Road","Harbour"] },
+  { id: "puducherry",   name: "Puducherry",   state: "Puducherry",      lat: "11.91°N", lon: "79.81°E", populationTotal: 6.6e5,  climate: "Tropical wet & dry", baseLST: 42.4, wardNames: ["White Town","Lawspet","Reddiarpalayam","Muthialpet","Heritage Town"] },
+];
+
+export const CITIES: City[] = [...SEED_CITIES, ...EXTRA_SPECS.map(buildCity)];
+
+export type StateGroup = { state: string; cities: City[] };
+export const STATES: StateGroup[] = (() => {
+  const map = new Map<string, City[]>();
+  for (const c of CITIES) {
+    const arr = map.get(c.state) ?? [];
+    arr.push(c);
+    map.set(c.state, arr);
+  }
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([state, cities]) => ({ state, cities }));
+})();
+
 export function getCity(id: string): City {
   return CITIES.find((c) => c.id === id) ?? CITIES[0];
 }
+
 
 export type Material = {
   name: string;
