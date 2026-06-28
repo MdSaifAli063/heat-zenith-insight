@@ -47,6 +47,7 @@ function Dashboard() {
   const [tod, setTod] = useState<TimeOfDay>("noon");
   const [horizon, setHorizon] = useState<Horizon>("now");
   const [filter, setFilter] = useState("");
+  const [layer, setLayer] = useState<MapLayer>("LST");
 
   const todOffset = TOD_OFFSET[tod];
   const horizonDelta = HORIZON_DELTA[horizon];
