@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Download, Layers, Thermometer, Users, Search,
 } from "lucide-react";
-import { HeatMapCanvas, getWard } from "@/components/HeatMapCanvas";
+import { HeatMapCanvas, getWard, type MapLayer } from "@/components/HeatMapCanvas";
 import { AIInsightsPanel } from "@/components/AIInsightsPanel";
 import { CoolingStrategyChart } from "@/components/CoolingStrategyChart";
 import { ScenarioSimulator } from "@/components/ScenarioSimulator";
