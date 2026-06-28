@@ -1,5 +1,7 @@
 import { heatColor, type Ward } from "@/lib/heat-data";
 
+export type MapLayer = "LST" | "NDVI" | "Albedo" | "ISF";
+
 type Props = {
   wards: Ward[];
   selectedId: string | null;
@@ -10,7 +12,31 @@ type Props = {
   lon: string;
   todOffset?: number;
   horizonDelta?: number;
+  layer?: MapLayer;
 };
+
+function layerColor(layer: MapLayer, w: Ward): string {
+  switch (layer) {
+    case "NDVI":
+      // higher NDVI = greener (cooler look)
+      return w.ndvi > 0.45 ? "var(--heat-cool)" : w.ndvi > 0.3 ? "var(--heat-mild)" : w.ndvi > 0.2 ? "var(--heat-warm)" : "var(--heat-hot)";
+    case "Albedo":
+      return w.albedo > 0.2 ? "var(--heat-cool)" : w.albedo > 0.16 ? "var(--heat-mild)" : w.albedo > 0.13 ? "var(--heat-warm)" : "var(--heat-hot)";
+    case "ISF":
+      return w.isf < 0.5 ? "var(--heat-cool)" : w.isf < 0.65 ? "var(--heat-mild)" : w.isf < 0.78 ? "var(--heat-warm)" : "var(--heat-extreme)";
+    default:
+      return heatColor(w.lst);
+  }
+}
+
+function layerValue(layer: MapLayer, w: Ward): string {
+  switch (layer) {
+    case "NDVI":   return w.ndvi.toFixed(2);
+    case "Albedo": return w.albedo.toFixed(2);
+    case "ISF":    return w.isf.toFixed(2);
+    default:       return `${w.lst.toFixed(1)}°`;
+  }
+}
 
 export function HeatMapCanvas({
   wards,
@@ -22,6 +48,7 @@ export function HeatMapCanvas({
   lon,
   todOffset = 0,
   horizonDelta = 0,
+  layer = "LST",
 }: Props) {
   const adjusted = wards.map((w) => ({ ...w, lst: w.lst + todOffset + horizonDelta }));
   const hottest = [...adjusted].sort((a, b) => b.lst - a.lst)[0];
@@ -38,7 +65,7 @@ export function HeatMapCanvas({
               top: `${w.y * 100}%`,
               width: `${120 + Math.max(0, w.lst - 33) * 18}px`,
               height: `${120 + Math.max(0, w.lst - 33) * 18}px`,
-              background: `radial-gradient(circle, ${heatColor(w.lst)} 0%, transparent 70%)`,
+              background: `radial-gradient(circle, ${layerColor(layer, w)} 0%, transparent 70%)`,
               opacity: 0.55,
             }}
           />
@@ -69,12 +96,12 @@ export function HeatMapCanvas({
               className={`relative h-3 w-3 rounded-full ring-2 ring-background transition-all ${
                 isSelected ? "scale-150" : "group-hover:scale-125"
               }`}
-              style={{ background: heatColor(w.lst) }}
+              style={{ background: layerColor(layer, w) }}
             >
-              {isHot && (
+              {isHot && layer === "LST" && (
                 <div
                   className="absolute inset-0 animate-pulse-heat rounded-full"
-                  style={{ background: heatColor(w.lst), filter: "blur(6px)" }}
+                  style={{ background: layerColor(layer, w), filter: "blur(6px)" }}
                 />
               )}
             </div>
@@ -87,7 +114,7 @@ export function HeatMapCanvas({
               style={{ marginLeft: "-2px" }}
             >
               <span className="font-medium tracking-wide">{w.name}</span>
-              <span style={{ color: heatColor(w.lst) }}>{w.lst.toFixed(1)}°</span>
+              <span style={{ color: layerColor(layer, w) }}>{layerValue(layer, w)}</span>
             </div>
           </button>
         );

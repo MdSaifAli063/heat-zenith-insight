@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Download, Layers, Thermometer, Users, Search,
 } from "lucide-react";
-import { HeatMapCanvas, getWard } from "@/components/HeatMapCanvas";
+import { HeatMapCanvas, getWard, type MapLayer } from "@/components/HeatMapCanvas";
 import { AIInsightsPanel } from "@/components/AIInsightsPanel";
 import { CoolingStrategyChart } from "@/components/CoolingStrategyChart";
 import { ScenarioSimulator } from "@/components/ScenarioSimulator";
@@ -47,6 +47,7 @@ function Dashboard() {
   const [tod, setTod] = useState<TimeOfDay>("noon");
   const [horizon, setHorizon] = useState<Horizon>("now");
   const [filter, setFilter] = useState("");
+  const [layer, setLayer] = useState<MapLayer>("LST");
 
   const todOffset = TOD_OFFSET[tod];
   const horizonDelta = HORIZON_DELTA[horizon];
@@ -142,7 +143,7 @@ function Dashboard() {
                   </div>
                   <div className="text-sm font-semibold">{city.name} thermal stack</div>
                 </div>
-                <LayerSwitcher />
+                <LayerSwitcher value={layer} onChange={setLayer} />
               </div>
               <HeatMapCanvas
                 wards={city.wards}
@@ -154,6 +155,7 @@ function Dashboard() {
                 lon={city.lon}
                 todOffset={todOffset}
                 horizonDelta={horizonDelta}
+                layer={layer}
               />
             </div>
 
@@ -299,18 +301,17 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LayerSwitcher() {
-  const layers = ["LST", "NDVI", "Albedo", "Density"] as const;
-  const [active, setActive] = useState<(typeof layers)[number]>("LST");
+function LayerSwitcher({ value, onChange }: { value: MapLayer; onChange: (l: MapLayer) => void }) {
+  const layers: MapLayer[] = ["LST", "NDVI", "Albedo", "ISF"];
   return (
     <div className="flex items-center gap-1 rounded-md border border-border/60 bg-card/60 p-1">
       <Layers className="ml-1 h-3 w-3 text-muted-foreground" />
       {layers.map((l) => (
         <button
           key={l}
-          onClick={() => setActive(l)}
+          onClick={() => onChange(l)}
           className={`rounded px-2 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
-            active === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            value === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {l}
