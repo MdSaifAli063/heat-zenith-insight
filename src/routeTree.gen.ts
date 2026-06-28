@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PredictionsRouteImport } from './routes/predictions'
+import { Route as OptimizationRouteImport } from './routes/optimization'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AnalysisRouteImport } from './routes/analysis'
@@ -25,6 +26,11 @@ const ReportsRoute = ReportsRouteImport.update({
 const PredictionsRoute = PredictionsRouteImport.update({
   id: '/predictions',
   path: '/predictions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OptimizationRoute = OptimizationRouteImport.update({
+  id: '/optimization',
+  path: '/optimization',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaterialsRoute = MaterialsRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
+  '/optimization': typeof OptimizationRoute
   '/predictions': typeof PredictionsRoute
   '/reports': typeof ReportsRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
+  '/optimization': typeof OptimizationRoute
   '/predictions': typeof PredictionsRoute
   '/reports': typeof ReportsRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
+  '/optimization': typeof OptimizationRoute
   '/predictions': typeof PredictionsRoute
   '/reports': typeof ReportsRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/dashboard'
     | '/materials'
+    | '/optimization'
     | '/predictions'
     | '/reports'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/dashboard'
     | '/materials'
+    | '/optimization'
     | '/predictions'
     | '/reports'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/dashboard'
     | '/materials'
+    | '/optimization'
     | '/predictions'
     | '/reports'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   AnalysisRoute: typeof AnalysisRoute
   DashboardRoute: typeof DashboardRoute
   MaterialsRoute: typeof MaterialsRoute
+  OptimizationRoute: typeof OptimizationRoute
   PredictionsRoute: typeof PredictionsRoute
   ReportsRoute: typeof ReportsRoute
 }
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/predictions'
       fullPath: '/predictions'
       preLoaderRoute: typeof PredictionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/optimization': {
+      id: '/optimization'
+      path: '/optimization'
+      fullPath: '/optimization'
+      preLoaderRoute: typeof OptimizationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/materials': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalysisRoute: AnalysisRoute,
   DashboardRoute: DashboardRoute,
   MaterialsRoute: MaterialsRoute,
+  OptimizationRoute: OptimizationRoute,
   PredictionsRoute: PredictionsRoute,
   ReportsRoute: ReportsRoute,
 }
