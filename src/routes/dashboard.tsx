@@ -93,43 +93,20 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-6 py-3">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="relative h-6 w-6">
-                <div className="absolute inset-0 rounded bg-gradient-to-br from-primary to-accent" />
-                <div className="absolute inset-[2px] rounded-[3px] bg-background" />
-                <div className="absolute inset-[4px] rounded-sm bg-gradient-to-br from-primary to-accent" />
-              </div>
-              <div className="font-semibold">
-                Therma<span className="text-primary">Grid</span>
-              </div>
-              <span className="ml-2 hidden font-mono text-[10px] uppercase tracking-widest text-muted-foreground md:inline">
-                Mission Control
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <CitySelector cityId={cityId} onChange={changeCity} />
-            <TimeHorizonControls tod={tod} setTod={setTod} horizon={horizon} setHorizon={setHorizon} />
-            <button
-              onClick={exportCSV}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export CSV
-            </button>
-          </div>
+      <DashHeader cityId={cityId} />
+      <div className="border-b border-border/60 bg-background/60">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-end gap-2 px-6 py-2">
+          <CitySelector cityId={cityId} onChange={changeCity} />
+          <TimeHorizonControls tod={tod} setTod={setTod} horizon={horizon} setHorizon={setHorizon} />
+          <button
+            onClick={exportCSV}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </button>
         </div>
-      </header>
+      </div>
 
       <main className="mx-auto max-w-[1600px] space-y-5 px-6 py-6">
         {/* City context bar */}
