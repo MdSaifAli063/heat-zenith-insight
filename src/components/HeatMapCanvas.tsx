@@ -65,7 +65,7 @@ export function HeatMapCanvas({
               top: `${w.y * 100}%`,
               width: `${120 + Math.max(0, w.lst - 33) * 18}px`,
               height: `${120 + Math.max(0, w.lst - 33) * 18}px`,
-              background: `radial-gradient(circle, ${heatColor(w.lst)} 0%, transparent 70%)`,
+              background: `radial-gradient(circle, ${layerColor(layer, w)} 0%, transparent 70%)`,
               opacity: 0.55,
             }}
           />
