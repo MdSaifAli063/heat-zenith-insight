@@ -1,12 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeft, BarChart3, Bell, FileText, Gauge, LineChart, Palette } from "lucide-react";
+import { ArrowLeft, BarChart3, Bell, FileText, Gauge, LineChart, Palette, Sparkles } from "lucide-react";
 
 const ITEMS = [
   { to: "/dashboard", label: "Overview", icon: Gauge },
   { to: "/materials", label: "Materials", icon: Palette },
-  { to: "/alerts", label: "Alerts", icon: Bell },
-  { to: "/predictions", label: "Predictions", icon: LineChart },
+  { to: "/optimization", label: "Optimize", icon: Sparkles },
   { to: "/analysis", label: "Analysis", icon: BarChart3 },
+  { to: "/predictions", label: "Predictions", icon: LineChart },
+  { to: "/alerts", label: "Alerts", icon: Bell },
   { to: "/reports", label: "Reports", icon: FileText },
 ] as const;
 
