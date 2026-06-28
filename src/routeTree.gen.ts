@@ -13,6 +13,7 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PredictionsRouteImport } from './routes/predictions'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalysisRoute = AnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
   '/predictions': typeof PredictionsRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
   '/predictions': typeof PredictionsRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/analysis': typeof AnalysisRoute
   '/dashboard': typeof DashboardRoute
   '/materials': typeof MaterialsRoute
   '/predictions': typeof PredictionsRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alerts'
+    | '/analysis'
     | '/dashboard'
     | '/materials'
     | '/predictions'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/alerts'
+    | '/analysis'
     | '/dashboard'
     | '/materials'
     | '/predictions'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/alerts'
+    | '/analysis'
     | '/dashboard'
     | '/materials'
     | '/predictions'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertsRoute: typeof AlertsRoute
+  AnalysisRoute: typeof AnalysisRoute
   DashboardRoute: typeof DashboardRoute
   MaterialsRoute: typeof MaterialsRoute
   PredictionsRoute: typeof PredictionsRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alerts': {
       id: '/alerts'
       path: '/alerts'
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertsRoute: AlertsRoute,
+  AnalysisRoute: AnalysisRoute,
   DashboardRoute: DashboardRoute,
   MaterialsRoute: MaterialsRoute,
   PredictionsRoute: PredictionsRoute,

@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, ArrowLeft, Download, Layers, Thermometer, Users, Search,
+  Activity, AlertTriangle, Download, Layers, Thermometer, Users, Search,
 } from "lucide-react";
 import { HeatMapCanvas, getWard } from "@/components/HeatMapCanvas";
 import { AIInsightsPanel } from "@/components/AIInsightsPanel";
 import { CoolingStrategyChart } from "@/components/CoolingStrategyChart";
 import { ScenarioSimulator } from "@/components/ScenarioSimulator";
+import { DashHeader } from "@/components/DashHeader";
 import { NeighborhoodTable } from "@/components/NeighborhoodTable";
 import { MaterialTable } from "@/components/MaterialTable";
 import { CitySelector } from "@/components/CitySelector";
