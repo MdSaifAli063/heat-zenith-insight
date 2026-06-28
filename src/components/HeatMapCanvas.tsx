@@ -1,5 +1,7 @@
 import { heatColor, type Ward } from "@/lib/heat-data";
 
+export type MapLayer = "LST" | "NDVI" | "Albedo" | "ISF";
+
 type Props = {
   wards: Ward[];
   selectedId: string | null;
@@ -10,7 +12,31 @@ type Props = {
   lon: string;
   todOffset?: number;
   horizonDelta?: number;
+  layer?: MapLayer;
 };
+
+function layerColor(layer: MapLayer, w: Ward): string {
+  switch (layer) {
+    case "NDVI":
+      // higher NDVI = greener (cooler look)
+      return w.ndvi > 0.45 ? "var(--heat-cool)" : w.ndvi > 0.3 ? "var(--heat-mild)" : w.ndvi > 0.2 ? "var(--heat-warm)" : "var(--heat-hot)";
+    case "Albedo":
+      return w.albedo > 0.2 ? "var(--heat-cool)" : w.albedo > 0.16 ? "var(--heat-mild)" : w.albedo > 0.13 ? "var(--heat-warm)" : "var(--heat-hot)";
+    case "ISF":
+      return w.isf < 0.5 ? "var(--heat-cool)" : w.isf < 0.65 ? "var(--heat-mild)" : w.isf < 0.78 ? "var(--heat-warm)" : "var(--heat-extreme)";
+    default:
+      return heatColor(w.lst);
+  }
+}
+
+function layerValue(layer: MapLayer, w: Ward): string {
+  switch (layer) {
+    case "NDVI":   return w.ndvi.toFixed(2);
+    case "Albedo": return w.albedo.toFixed(2);
+    case "ISF":    return w.isf.toFixed(2);
+    default:       return `${w.lst.toFixed(1)}°`;
+  }
+}
 
 export function HeatMapCanvas({
   wards,
@@ -22,6 +48,7 @@ export function HeatMapCanvas({
   lon,
   todOffset = 0,
   horizonDelta = 0,
+  layer = "LST",
 }: Props) {
   const adjusted = wards.map((w) => ({ ...w, lst: w.lst + todOffset + horizonDelta }));
   const hottest = [...adjusted].sort((a, b) => b.lst - a.lst)[0];
