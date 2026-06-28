@@ -96,12 +96,12 @@ export function HeatMapCanvas({
               className={`relative h-3 w-3 rounded-full ring-2 ring-background transition-all ${
                 isSelected ? "scale-150" : "group-hover:scale-125"
               }`}
-              style={{ background: heatColor(w.lst) }}
+              style={{ background: layerColor(layer, w) }}
             >
-              {isHot && (
+              {isHot && layer === "LST" && (
                 <div
                   className="absolute inset-0 animate-pulse-heat rounded-full"
-                  style={{ background: heatColor(w.lst), filter: "blur(6px)" }}
+                  style={{ background: layerColor(layer, w), filter: "blur(6px)" }}
                 />
               )}
             </div>
@@ -114,7 +114,7 @@ export function HeatMapCanvas({
               style={{ marginLeft: "-2px" }}
             >
               <span className="font-medium tracking-wide">{w.name}</span>
-              <span style={{ color: heatColor(w.lst) }}>{w.lst.toFixed(1)}°</span>
+              <span style={{ color: layerColor(layer, w) }}>{layerValue(layer, w)}</span>
             </div>
           </button>
         );
