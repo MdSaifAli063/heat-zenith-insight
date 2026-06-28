@@ -301,18 +301,17 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LayerSwitcher() {
-  const layers = ["LST", "NDVI", "Albedo", "Density"] as const;
-  const [active, setActive] = useState<(typeof layers)[number]>("LST");
+function LayerSwitcher({ value, onChange }: { value: MapLayer; onChange: (l: MapLayer) => void }) {
+  const layers: MapLayer[] = ["LST", "NDVI", "Albedo", "ISF"];
   return (
     <div className="flex items-center gap-1 rounded-md border border-border/60 bg-card/60 p-1">
       <Layers className="ml-1 h-3 w-3 text-muted-foreground" />
       {layers.map((l) => (
         <button
           key={l}
-          onClick={() => setActive(l)}
+          onClick={() => onChange(l)}
           className={`rounded px-2 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
-            active === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            value === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {l}
