@@ -143,7 +143,7 @@ function Dashboard() {
                   </div>
                   <div className="text-sm font-semibold">{city.name} thermal stack</div>
                 </div>
-                <LayerSwitcher />
+                <LayerSwitcher value={layer} onChange={setLayer} />
               </div>
               <HeatMapCanvas
                 wards={city.wards}
@@ -155,6 +155,7 @@ function Dashboard() {
                 lon={city.lon}
                 todOffset={todOffset}
                 horizonDelta={horizonDelta}
+                layer={layer}
               />
             </div>
 
